@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content%}
+    <div class="containers">
+        <div class="row justify-content-center">
+            <div class="card w-75">
+                <div class="card-header">
+                    <h4>Process Capability of 8月</h4>     
+                </div>
+                <img src="{{url_for('static', filename ='images_folder/Cpk.jpg')}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    Process Data
+                                </div>
+                                <div class="card-body">
+                                    <p>LSL: {{ cpkData['LSL'] }}</p>
+                                    <p>Target : {{ cpkData['target'] }}</p>
+                                    <p>USL: {{ cpkData['USL'] }}</p>
+                                    <p>Sample Median: {{cpkData['sample_median']}} </p>
+                                    <p>Sample N: {{ cpkData['sample_num'] }}</p>
+                                    <p>StDev(Within): {{ cpkData['sample_std'] }}</p>
+                                    <p>StDev(Overall): {{ cpkData['sample_std'] }}</p>
+                                </div>                           
+                            </div>  
+                        </div>  
+                        <div class="col-sm-4">
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    Potential(Within) Capability
+                                </div>
+                                <div class="card-body">
+                                    <p>CP: {{ cpkData['Cp'] }}</p>
+                                    <p>CPL: {{ cpkData['Cpl'] }}</p>
+                                    <p>CPU: {{ cpkData['Cpu'] }}</p>
+                                    <p>CPK: {{ cpkData['Cpk'] }}</p>
+                                </div>      
+                            </div>                                                          
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    Overall Capability
+                                </div>
+                                <div class="card-body">
+                                    <p>PP: {{ cpkData['Pp'] }}</p>
+                                        <p>PPL: {{ cpkData['Cpl'] }}</p>
+                                        <p>PPU: {{ cpkData['Cpu'] }}</p>
+                                        <p>PPK: {{ cpkData['Cpk'] }}</p>
+                                </div>                           
+                            </div>                       
+                        </div>               
+                    <div>
+                </div>        
+            </div>
+        </div>     
+    </div>
+{% endblock content %}
