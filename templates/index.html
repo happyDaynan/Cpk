@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content%}
+    <h1>上傳CPK相關資料</h1>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    </hr>
+    <div class="container">
+        <form action="/Upload", method="POST" enctype="multipart/form-data" >
+            <div class="form-group">
+                <div class="col-lg-3">
+                    <label for="inptarget" class="form-label">target</label>
+                    <input type="number" step="0.001" class="form-control" id= "inptarget" name="inptarget" placeholder="0.000">
+                </div>
+                <div class="col-lg-3">
+                    <label for="inpUSL" class="form-label">USL</label>
+                    <input type="number" step="0.001" class="form-control" id= "inpUSL" name="inpUSL" placeholder="0.000">
+                </div>
+                <div class="col-lg-3">
+                    <label for="inpLSL" class="form-label">LSL</label>
+                    <input type="number" step="0.001" class="form-control" id="inpLSL" name="inpLSL" placeholder="0.000">
+                </div>
+                <div class="col-lg-3">
+                    <label for="formFile" class="form-label">請選一個檔案上傳</label>
+                    <input class="form-control" type="file" name="csv_flies">
+                </div>
+            </div>
+            </br>
+            <button type="submit" class="btn btn-success">上傳</button>
+        </form>
+    </div>
+{% endblock content %}
