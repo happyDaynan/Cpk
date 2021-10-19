@@ -143,8 +143,7 @@ def Upload():
             showdata = processdata(uploadFile_path, dictData)
             showdata =  showpdf(showdata)
 
-            return redirect(url_for('show', cpkData = showdata))
-            # return redirect(render_template('show.html', cpkData = showdata))
+            return render_template('show.html', cpkData = showdata)
             
             # flash('新增成功')
             # return redirect(url_for('index'))
