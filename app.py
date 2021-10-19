@@ -202,6 +202,6 @@ def showpdf(showdata):
 
 
 if __name__ == '__main__':
-    # 設定 debug 模式
+    # 設定 debug 模式 正式環境要關閉
     app.run(debug= True)
     
