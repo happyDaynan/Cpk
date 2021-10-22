@@ -157,11 +157,12 @@ def showpdf(showdata):
     
     # def x and y label 
     _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
+    
     _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
 
     
     plt.figure(figsize=(20,10), dpi= 400)
-    plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=2)
+    plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=10 ) # bins=2 小數點
     # plt.plot(x, y, linestyle="--", color="black", label="Theorethical Density ST")
     plt.plot(_x, _y, color="red", label="Within")
     plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
@@ -169,6 +170,9 @@ def showpdf(showdata):
     plt.axvline(showdata['USL'], linestyle="--", color="orange", label= "USL")
     # plt.axvline(target, linestyle="--", color="green", label= "Target")
     plt.ylabel("")
+    
+    # plt.ylim([])
+    # plt.xlim([showdata['LSL']  ,showdata['USL']])
     plt.xticks(fontsize=20)
     plt.yticks([])
     plt.legend(fontsize=20)
