@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import seaborn as sns
-import os, pdfkit
+import os, pdfkit, math
 
 # 設定相關路徑
 UPLOAD_FOLDER = './static/upload_folder/'
@@ -44,15 +44,20 @@ def allowed_file(filename):
 def processdata(uploadFile_path, dictData):
     
 
-    df = pd.read_csv(uploadFile_path)
+    df = pd.read_csv(uploadFile_path, encoding="ISO-8859-1")
     data = df.values
 
     dictData['num_samples'] = len(data) # 樣本數量
-    dictData['sample_mean'] = round(np.mean(data),5) # 樣本平均數
-    dictData['sample_std']  = round(np.std(data), 8) # 樣本標準差
+    # dictData['sample_mean'] = round(np.mean(data),5) # 樣本平均數
+    dictData['sample_mean'] = data.mean()
+
+    # dictData['sample_std']  = round(np.std(data), 8) # 樣本標準差
+    dictData['sample_std']  = np.std(data, ddof=1)
     dictData['sample_max']  = np.max(data)
     dictData['sample_min'] = np.min(data)
     dictData['sample_median']  = np.median(data) # 樣本中位數
+
+    dictData['sigma'] = 3
 
     # Calculate Cp and Pp
     dictData['Cp'] = round((dictData['USL'] - dictData['LSL'])/(6*np.std(data)), 2)
@@ -115,6 +120,10 @@ def Upload():
     if request.method == 'POST':
         file = request.files['csv_flies']
         print(file)
+        
+
+        if int(request.form.get('inpLSL')) <= 0:
+                lsl = 0 - int(request.form.get('inpUSL'))
 
         dictData = {
             "target" : float(request.form.get('inptarget')),
@@ -156,20 +165,27 @@ def Upload():
 def showpdf(showdata):
     
     # def x and y label 
-    _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
+    # _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
+    _x1 = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'], 1000) # 處理正數
     
-    _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+    # _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+    _y1 = np.exp(-(_x1 - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
+    
+    
 
-    
     plt.figure(figsize=(20,10), dpi= 400)
-    plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=10 ) # bins=2 小數點
+    # plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=10 ) # bins=2 小數點
     # plt.plot(x, y, linestyle="--", color="black", label="Theorethical Density ST")
-    plt.plot(_x, _y, color="red", label="Within")
-    plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
+    # plt.plot(_x, _y, color="red", label="Within")
+    # plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
+
+    plt.xlim(_x1[0] - 0.5, _x1[-1] + 0.5)
+    plt.plot(_x1, _y1, color="red", label="Within")
+    plt.hist(showdata['allData'], color='lightgrey', edgecolor="black",density=True)
     plt.axvline(showdata['LSL'], linestyle="--", color="red", label= "LSL")
     plt.axvline(showdata['USL'], linestyle="--", color="orange", label= "USL")
     # plt.axvline(target, linestyle="--", color="green", label= "Target")
-    plt.ylabel("")
+    # plt.ylabel("")
     
     # plt.ylim([])
     # plt.xlim([showdata['LSL']  ,showdata['USL']])
