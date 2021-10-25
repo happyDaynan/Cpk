@@ -43,7 +43,6 @@ def allowed_file(filename):
 #　處理資料
 def processdata(uploadFile_path, dictData):
     
-
     df = pd.read_csv(uploadFile_path, encoding="ISO-8859-1")
     data = df.values
 
@@ -88,6 +87,7 @@ def processdata(uploadFile_path, dictData):
     """
     dictData['Cpl'] = round((dictData['sample_mean'] - dictData['LSL'] )/(3 * dictData['sample_std']), 2)
 
+
     # Calculate Cpk and Ppk
     """
         Cpk = min｛Cpl, Cpu｝
@@ -119,12 +119,13 @@ def Upload():
     
     if request.method == 'POST':
         file = request.files['csv_flies']
-        print(file)
         
-
+        """
         if int(request.form.get('inpLSL')) <= 0:
                 lsl = 0 - int(request.form.get('inpUSL'))
 
+        """
+        
         dictData = {
             "target" : float(request.form.get('inptarget')),
             "LSL" : float(request.form.get('inpLSL')),
@@ -164,24 +165,32 @@ def Upload():
 
 def showpdf(showdata):
     
-    # def x and y label 
-    # _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
-    _x1 = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'], 1000) # 處理正數
-    
-    # _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
-    _y1 = np.exp(-(_x1 - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
-    
-    
+    # 產生X軸平均分佈
+    _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
 
+    # _x1 = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
+    
+    _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+    # _y1 = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
+    
+    
     plt.figure(figsize=(20,10), dpi= 400)
-    # plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=10 ) # bins=2 小數點
+
+    # 小數點處理方式
+    # plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=2 ) # bins=2 小數點 薯條
     # plt.plot(x, y, linestyle="--", color="black", label="Theorethical Density ST")
     # plt.plot(_x, _y, color="red", label="Within")
     # plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
 
-    plt.xlim(_x1[0] - 0.5, _x1[-1] + 0.5)
-    plt.plot(_x1, _y1, color="red", label="Within")
-    plt.hist(showdata['allData'], color='lightgrey', edgecolor="black",density=True)
+    
+    # plt.xlim(_x1[0] - 0.01, _x1[-1] + 0.01)
+    #　plt.xlim( showdata['LSL']- 0.1 , showdata['USL'] + 0.1 )
+    plt.hist(showdata['allData'],16,color='lightgrey', edgecolor="black" ,density=True) # 整數
+    
+    plt.plot(_x, _y, color="red", label="Within")
+    plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
+    
+
     plt.axvline(showdata['LSL'], linestyle="--", color="red", label= "LSL")
     plt.axvline(showdata['USL'], linestyle="--", color="orange", label= "USL")
     # plt.axvline(target, linestyle="--", color="green", label= "Target")
@@ -189,9 +198,10 @@ def showpdf(showdata):
     
     # plt.ylim([])
     # plt.xlim([showdata['LSL']  ,showdata['USL']])
-    plt.xticks(fontsize=20)
+    
+    plt.xticks(fontsize=15)
     plt.yticks([])
-    plt.legend(fontsize=20)
+    plt.legend(loc='upper right',fontsize=20)
 
     _images_Path = os.path.join(app.config['IMAGES_FOLDER'], 'Cpk.jpg')
     
