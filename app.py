@@ -200,7 +200,7 @@ def showpdf(showdata):
     # plt.xlim([showdata['LSL']  ,showdata['USL']])
     
     plt.xticks(fontsize=15)
-    plt.yticks([])
+    ## plt.yticks([])
     plt.legend(loc='upper right',fontsize=20)
 
     _images_Path = os.path.join(app.config['IMAGES_FOLDER'], 'Cpk.jpg')
@@ -232,7 +232,6 @@ def showpdf(showdata):
 
 
 if __name__ == '__main__':
-    
     # 設定 debug 模式 正式環境要關閉
     app.run(debug= True)
     
