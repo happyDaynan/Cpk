@@ -44,17 +44,18 @@ def allowed_file(filename):
 def processdata(uploadFile_path, dictData):
     
     df = pd.read_csv(uploadFile_path, encoding="ISO-8859-1")
-    data = df.values
+    # data = df.values
+    data = df.squeeze()
 
     dictData['num_samples'] = len(data) # 樣本數量
     # dictData['sample_mean'] = round(np.mean(data),5) # 樣本平均數
-    dictData['sample_mean'] = data.mean()
+    dictData['sample_mean'] = round(data.mean(),5)
 
     # dictData['sample_std']  = round(np.std(data), 8) # 樣本標準差
-    dictData['sample_std']  = np.std(data, ddof=1)
+    dictData['sample_std']  = round(np.std(data, ddof=1), 8)
     dictData['sample_max']  = np.max(data)
     dictData['sample_min'] = np.min(data)
-    dictData['sample_median']  = np.median(data) # 樣本中位數
+    dictData['sample_median']  = round(np.median(data),5) # 樣本中位數
 
     dictData['sigma'] = 3
 
@@ -120,16 +121,12 @@ def Upload():
     if request.method == 'POST':
         file = request.files['csv_flies']
         
-        """
-        if int(request.form.get('inpLSL')) <= 0:
-                lsl = 0 - int(request.form.get('inpUSL'))
-
-        """
         
         dictData = {
             "target" : float(request.form.get('inptarget')),
             "LSL" : float(request.form.get('inpLSL')),
             "USL" : float(request.form.get('inpUSL')),
+            "title" : request.form.get('inpttitle')
         }
   
         
@@ -168,25 +165,35 @@ def showpdf(showdata):
     # 產生X軸平均分佈
     _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
 
-    # _x1 = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
+    # _x = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
     
-    _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
-    # _y1 = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
+    # _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+    _y = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
     
     
     plt.figure(figsize=(20,10), dpi= 400)
 
     # 小數點處理方式
     # plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=2 ) # bins=2 小數點 薯條
-    # plt.plot(x, y, linestyle="--", color="black", label="Theorethical Density ST")
-    # plt.plot(_x, _y, color="red", label="Within")
-    # plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
 
-    
-    # plt.xlim(_x1[0] - 0.01, _x1[-1] + 0.01)
-    #　plt.xlim( showdata['LSL']- 0.1 , showdata['USL'] + 0.1 )
-    plt.hist(showdata['allData'],16,color='lightgrey', edgecolor="black" ,density=True) # 整數
-    
+    # 資料組數 維持20內
+    # 長度大於20 直接除2
+    if len(showdata['allData'].value_counts()) <= 20 :
+        _bins = int(len(showdata['allData'].value_counts()))
+    elif int(len(showdata['allData'].value_counts())/2) <= 20:
+        _bins = int(len(showdata['allData'].value_counts())/2)
+    elif int(len(showdata['allData'].value_counts())/4) <= 20:
+        _bins = int(len(showdata['allData'].value_counts())/4)       
+    elif int(len(showdata['allData'].value_counts())/6) <= 20:
+        _bins = int(len(showdata['allData'].value_counts())/6)
+    else:
+        _bins = int(len(showdata['allData'].value_counts())/8)
+
+    plt.hist(showdata['allData'],bins= _bins, color='lightgrey', edgecolor="black" , histtype = 'bar', align='mid',density=True) # 整數
+
+    # Binwidth = 0.1
+    # plt.hist(showdata['allData'],bins= np.arange(showdata['sample_min'], showdata['sample_max'] + Binwidth, Binwidth), color='lightgrey', edgecolor="black" , histtype = 'bar',density=True)
+
     plt.plot(_x, _y, color="red", label="Within")
     plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
     
@@ -194,13 +201,11 @@ def showpdf(showdata):
     plt.axvline(showdata['LSL'], linestyle="--", color="red", label= "LSL")
     plt.axvline(showdata['USL'], linestyle="--", color="orange", label= "USL")
     # plt.axvline(target, linestyle="--", color="green", label= "Target")
-    # plt.ylabel("")
+ 
     
-    # plt.ylim([])
-    # plt.xlim([showdata['LSL']  ,showdata['USL']])
-    
-    plt.xticks(fontsize=15)
-    ## plt.yticks([])
+    # plt.xticks(np.arange(showdata['sample_min'] - 0.16, showdata['sample_max'] + 0.16 , step= 0.08),fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks([])
     plt.legend(loc='upper right',fontsize=20)
 
     _images_Path = os.path.join(app.config['IMAGES_FOLDER'], 'Cpk.jpg')
@@ -214,7 +219,7 @@ def showpdf(showdata):
     # 結果存檔
     plt.savefig(_images_Path)
 
-    _pdf_Path = os.path.join(app.config['PDF_FOLDER'], 'Cpk.pdf')
+    _pdf_Path = os.path.join(app.config['PDF_FOLDER'], f"{showdata['title']}.pdf")
 
     if not os.path.exists(app.config['PDF_FOLDER']):
         os.mkdir(app.config['PDF_FOLDER'])
