@@ -162,34 +162,41 @@ def Upload():
 
 def showpdf(showdata):
     
-    # 產生X軸平均分佈
-    _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
-
-    # _x = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
-    
-    # _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
-    _y = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
     
     
     plt.figure(figsize=(20,10), dpi= 400)
 
-    # 小數點處理方式
-    # plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=2 ) # bins=2 小數點 薯條
+    if float(showdata['USL'])  <= 1:
+        
+        # 處理薯條資料
+        # 小數點處理方式
+        _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
+        _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+        plt.hist(showdata['allData'], color='lightgrey', edgecolor="black", bins=2) # bins=2 小數點 薯條
 
-    # 資料組數 維持20內
-    # 長度大於20 直接除2
-    if len(showdata['allData'].value_counts()) <= 20 :
-        _bins = int(len(showdata['allData'].value_counts()))
-    elif int(len(showdata['allData'].value_counts())/2) <= 20:
-        _bins = int(len(showdata['allData'].value_counts())/2)
-    elif int(len(showdata['allData'].value_counts())/4) <= 20:
-        _bins = int(len(showdata['allData'].value_counts())/4)       
-    elif int(len(showdata['allData'].value_counts())/6) <= 20:
-        _bins = int(len(showdata['allData'].value_counts())/6)
     else:
-        _bins = int(len(showdata['allData'].value_counts())/8)
 
-    plt.hist(showdata['allData'],bins= _bins, color='lightgrey', edgecolor="black" , histtype = 'bar', align='mid',density=True) # 整數
+        
+        # _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
+        _x = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
+        
+        # _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+        _y = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
+    
+        # 資料組數 維持20內
+        # 長度大於20 直接除2
+        if len(showdata['allData'].value_counts()) <= 20 :
+            _bins = int(len(showdata['allData'].value_counts()))
+        elif int(len(showdata['allData'].value_counts())/2) <= 20:
+            _bins = int(len(showdata['allData'].value_counts())/2)
+        elif int(len(showdata['allData'].value_counts())/4) <= 20:
+            _bins = int(len(showdata['allData'].value_counts())/4)       
+        elif int(len(showdata['allData'].value_counts())/6) <= 20:
+            _bins = int(len(showdata['allData'].value_counts())/6)
+        else:
+            _bins = int(len(showdata['allData'].value_counts())/8)
+
+        plt.hist(showdata['allData'],bins= _bins, color='lightgrey', edgecolor="black" , histtype = 'bar', align='mid',density=True) # 整數
 
     # Binwidth = 0.1
     # plt.hist(showdata['allData'],bins= np.arange(showdata['sample_min'], showdata['sample_max'] + Binwidth, Binwidth), color='lightgrey', edgecolor="black" , histtype = 'bar',density=True)
@@ -197,7 +204,6 @@ def showpdf(showdata):
     plt.plot(_x, _y, color="red", label="Within")
     plt.plot(_x, _y, linestyle="--", color="black", label="Overall")
     
-
     plt.axvline(showdata['LSL'], linestyle="--", color="red", label= "LSL")
     plt.axvline(showdata['USL'], linestyle="--", color="orange", label= "USL")
     # plt.axvline(target, linestyle="--", color="green", label= "Target")
