@@ -9,6 +9,8 @@ pandas = "*"
 matplotlib = "*"
 seaborn = "*"
 pdfkit = "*"
+openpyxl = "*"
+xlrd = "*"
 
 [dev-packages]
 

@@ -14,7 +14,7 @@ IMAGES_FOLDER = './static/images_folder/'
 PDF_FOLDER = './output/pdf_folder/'
 
 # 設定副檔名
-ALLOWED_EXTENSIONS = set(['csv', 'xlsx', 'xls'])
+ALLOWED_EXTENSIONS = set(['xlsx', 'xls'])
 
 #　pdfkit
 pdfkit_Options = {
@@ -42,8 +42,14 @@ def allowed_file(filename):
 
 #　處理資料
 def processdata(uploadFile_path, dictData):
+
+    # 判斷檔案副檔名
+    _a =  uploadFile_path.rsplit('.', 1)[1]
+
+   
+    df = pd.read_excel(uploadFile_path)
     
-    df = pd.read_csv(uploadFile_path, encoding="ISO-8859-1")
+
     # data = df.values
     data = df.squeeze()
 
@@ -121,14 +127,12 @@ def Upload():
     if request.method == 'POST':
         file = request.files['csv_flies']
         
-        
         dictData = {
             "target" : float(request.form.get('inptarget')),
             "LSL" : float(request.form.get('inpLSL')),
             "USL" : float(request.form.get('inpUSL')),
             "title" : request.form.get('inpttitle')
         }
-  
         
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -177,11 +181,11 @@ def showpdf(showdata):
     else:
 
         
-        # _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
-        _x = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
+        _x = np.linspace(showdata['USL'], showdata['LSL'], showdata['num_samples'])
+        # _x = np.linspace(showdata['sample_mean'] - showdata['sigma'] * showdata['sample_std'], showdata['sample_mean'] + showdata['sigma'] * showdata['sample_std'],1000) # 處理正數
         
-        # _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
-        _y = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
+        _y = norm.pdf(_x, loc= showdata['sample_mean'], scale= showdata['sample_std'])
+        #_y = np.exp(-(_x - showdata['sample_mean']) ** 2 / (2 * showdata['sample_std'] ** 2)) / (math.sqrt(2 * math.pi) * showdata['sample_std'])
     
         # 資料組數 維持20內
         # 長度大於20 直接除2
@@ -196,7 +200,8 @@ def showpdf(showdata):
         else:
             _bins = int(len(showdata['allData'].value_counts())/8)
 
-        plt.hist(showdata['allData'],bins= _bins, color='lightgrey', edgecolor="black" , histtype = 'bar', align='mid',density=True) # 整數
+        plt.hist(showdata['allData'],bins= _bins, color='lightgrey', edgecolor="black" , histtype = 'bar', align='mid', density=True) # 整數
+
 
     # Binwidth = 0.1
     # plt.hist(showdata['allData'],bins= np.arange(showdata['sample_min'], showdata['sample_max'] + Binwidth, Binwidth), color='lightgrey', edgecolor="black" , histtype = 'bar',density=True)
